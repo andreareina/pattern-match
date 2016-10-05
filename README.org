@@ -1,0 +1,47 @@
+#+TITLE: Pattern-Match
+#+AUTHOR: Andrea Reina
+
+Simple pattern-matching for Common Lisp
+
+* Usage
+  #+BEGIN_SRC lisp
+    (pattern-case KEYFORM (PATTERN FORM*)*)
+  #+END_SRC
+
+** Examples
+   #+BEGIN_SRC lisp
+     (defun factorial (n)
+       (pattern-case n
+         (0 1)
+         (n (* n (factorial (1- n))))))
+   #+END_SRC
+   #+BEGIN_SRC lisp
+     (defun kth (k list)
+       (pattern-case (list k list)
+         ((_ nil) (error "much k. little list. such fail. wow."))
+         ((0 (x . _)) x)
+         ((k (_ . xs)) (kth (1- k) xs))))
+   #+END_SRC
+
+* Patterns
+  * Literal values are typechecked; symbols aren't.
+  * By convention =_= is an ignored term and remains unbound; multiple =_= may appear in =PATTERN=.
+  | Pattern      | Matches                             |
+  |--------------+-------------------------------------|
+  | =t=          | generalized boolean (i.e. non-null) |
+  | =nil=        | itself                              |
+  | :keyword     | itself                              |
+  | =_=          | anything                            |
+  | other symbol | anything; bind to expression        |
+  | other atom   | itself                              |
+
+** Examples
+   | Pattern  | Expression        | Match? | Binds                      |
+   |----------+-------------------+--------+----------------------------|
+   | 0        | 0                 | Y      |                            |
+   | 0        | 0.0               | N      |                            |
+   | (n . ns) | (1 2 3)           | Y      | =n => 1= =ns => (2 3)=     |
+   | (n . ns) | (1)               | Y      | =n => 1= =ns => ()=        |
+   | (a b)    | (BATMAN ROBIN)    | Y      | =a => BATMAN= =b => ROBIN= |
+   | (a b)    | (LARRY MOE CURLY) | N      |                            |
+
